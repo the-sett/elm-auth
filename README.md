@@ -39,6 +39,14 @@ to the current authentication status.
 # more things an API needs to do
 
 * Add auth info to an HTTP header.
+
+addAuthInfo : { a | headers : List Header } -> { a | headers : List Header }
+
 * Answer challenges. 'chal' can be Never.
+
 * Sign up new users.
 * Verification links.
+
+Are these part of a separate API?
+
+* Fetch a user profile.
