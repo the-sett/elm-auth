@@ -1,35 +1,44 @@
-# auth-elm
+**Contacts for Support**
+- @rupertlssmith on https://elmlang.slack.com
+- @rupert on https://discourse.elm-lang.org
 
-Elm auth module for interacting with the-sett/auth-service.
+# elm-auth
 
-This is unlikely to be useful to you directly, but you may find a nice example
-here showing how a re-usable authentication package can be structured.
+This is an API specification for authentication of Elm apps.
 
-The idea here is to capture the interaction with an authentication API as an Elm
-package and to present that as a simpler API that applications need authentication
-can make use of. The core of the API is the authentication commands, which are:
+The idea here is to capture the interaction with a typical authentication API as
+an Elm package and to present that as a simpler API that applications need
+authentication can make use of. The core of the API is the authentication commands, which are:
 
 ```
-login : Credentials -> Cmd Msg
-refresh : Cmd Msg
-logout : Cmd Msg
-unauthed : Cmd Msg
+login : Credentials -> Cmd msg
+refresh : Cmd msg
+logout : Cmd msg
+unauthed : Cmd msg
 ```
 
-The commands yield messages that must be given to its `update` function which has
+The commands yield messages that must be given to an `update` function which has
 this signature and related types:
 
 ```
-type Status
+type Status chal
     = Failed
+    | Challenged chal
     | LoggedOut
     | LoggedIn
         { scopes : List String
         , subject : String
         }
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe Status )
+update : msg -> model -> ( model, Cmd msg, Maybe (Status chal))
 ```
 
 That is, each message will update the internal model, and may produce a change
 to the current authentication status.
+
+# more things an API needs to do
+
+* Add auth info to an HTTP header.
+* Answer challenges. 'chal' can be Never.
+* Sign up new users.
+* Verification links.
