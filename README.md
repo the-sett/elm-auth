@@ -40,7 +40,7 @@ to the current authentication status.
 
 * Add auth info to an HTTP header.
 
-addAuthInfo : { a | headers : List Header } -> { a | headers : List Header }
+addAuthInfo : model -> { a | headers : List Header } -> { a | headers : List Header }
 
 * Answer challenges. 'chal' can be Never.
 
