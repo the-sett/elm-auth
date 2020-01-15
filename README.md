@@ -4,6 +4,12 @@
 
 # elm-auth
 
+To learn how to use this the best place is to look at the demo code. The demo authenticates against Amazon Cognito.
+
+[the-sett/elm-auth-demo](https://github.com/the-sett/elm-auth-demo) - Demo authenticating against AWS Cognito.
+
+# A simplified API for authentication.
+
 This is an API specification for authentication of Elm apps.
 
 The idea here is to capture the interaction with a typical authentication API as
