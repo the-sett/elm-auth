@@ -1,10 +1,11 @@
 module Jwt exposing
     ( decode, isExpired, extractTokenBody
     , StandardToken, standardTokenDecoder
-    , JwtError
+    , JwtError(..)
     )
 
-{-| Decoding of JWT tokens.
+{-| JWT tokens are usually base64 encoded. This module provides some utility functions
+to assist with decoding such tokens.
 
 @docs decode, isExpired, extractTokenBody
 @docs StandardToken, standardTokenDecoder
