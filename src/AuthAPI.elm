@@ -50,7 +50,7 @@ applications.
 -}
 type alias AuthAPI config model msg chal ext =
     { ext
-        | init : config -> model
+        | init : config -> Result String model
         , login : Credentials -> Cmd msg
         , logout : Cmd msg
         , unauthed : Cmd msg
