@@ -21,6 +21,8 @@ The commands yield messages that must be given to an `update` function which has
 this signature and related types:
 
 ```
+update : msg -> model -> ( model, Cmd msg, Maybe (Status chal))
+
 type Status chal
     = Failed
     | Challenged chal
@@ -29,24 +31,37 @@ type Status chal
         { scopes : List String
         , subject : String
         }
-
-update : msg -> model -> ( model, Cmd msg, Maybe (Status chal))
 ```
 
 That is, each message will update the internal model, and may produce a change
 to the current authentication status.
 
-# more things an API needs to do
+# An extensible API with multiple implementations.
 
-* Add auth info to an HTTP header.
+This package contains an API specification and some related utility code. The actual auth implementations that interact with various back-ends are:
 
-addAuthInfo : model -> { a | headers : List Header } -> { a | headers : List Header }
 
-* Answer challenges. 'chal' can be Never.
+[the-sett/elm-auth-aws](https://github.com/the-sett/elm-auth-aws) - Authenticate against AWS Cognito.
 
-* Sign up new users.
-* Verification links.
+[the-sett/elm-auth-the-sett](https://github.com/the-sett/elm-auth-the-sett) - Authenticate against a custom auth server.
 
-Are these part of a separate API?
+The API is presented as an extensible record of functions:
 
-* Fetch a user profile.
+```
+type alias AuthAPI config model msg chal ext =
+    { ext
+        | init : config -> Result String model
+        , login : Credentials -> Cmd msg
+        , logout : Cmd msg
+        , unauthed : Cmd msg
+        , refresh : Cmd msg
+        , update : msg -> model -> ( model, Cmd msg, Maybe (Status chal) )
+        , addAuthHeaders : model -> List Http.Header -> List Http.Header
+
+    }
+```
+
+Each implementation fills in its own types for `config`, `model`, `msg`, `chal` and `ext`. The `model` and `msg` types for an implementation are likely to be opaque to hide the internal workings.
+
+The `chal` type will be `Never` if the authentication API does not issue additional challenges, or some description of the possible extra challenges
+that may need to be answered in order to authenticate - for 2-factor authentication for example.

@@ -1,13 +1,13 @@
 module Jwt exposing
-    ( decode, isExpired
-    , StandardToken
+    ( decode, isExpired, extractTokenBody
+    , StandardToken, standardTokenDecoder
     , JwtError
     )
 
 {-| Decoding of JWT tokens.
 
-@docs decode, isExpired
-@docs StandardToken
+@docs decode, isExpired, extractTokenBody
+@docs StandardToken, standardTokenDecoder
 @docs JwtError
 
 -}
@@ -92,8 +92,8 @@ type JwtError
 
 {-| Decodes a JWT token from its encoded string format.
 -}
-decode : String -> Decoder token -> Result JwtError token
-decode token decoder =
+decode : Decoder token -> String -> Result JwtError token
+decode decoder token =
     extractAndDecodeToken decoder token
 
 
@@ -114,8 +114,10 @@ isExpired now token =
             True
 
 
-extractAndDecodeToken : Decode.Decoder a -> String -> Result JwtError a
-extractAndDecodeToken dec s =
+{-| Extracts the base64 encoded token body.
+-}
+extractTokenBody : String -> Result JwtError String
+extractTokenBody s =
     let
         f1 =
             String.split "." <| unurl s
@@ -124,24 +126,34 @@ extractAndDecodeToken dec s =
             List.map fixlength f1
     in
     case f2 of
-        _ :: (Result.Err e) :: _ :: [] ->
-            Result.Err e
+        _ :: (Err e) :: _ :: [] ->
+            Err e
 
-        _ :: (Result.Ok encBody) :: _ :: [] ->
+        _ :: (Ok encBody) :: _ :: [] ->
             case Base64.decode encBody of
-                Result.Ok body ->
-                    case Decode.decodeString dec body of
-                        Result.Ok x ->
-                            Result.Ok x
+                Ok body ->
+                    Ok body
 
-                        Result.Err e ->
-                            Result.Err (TokenDecodeError <| Decode.errorToString e)
-
-                Result.Err e ->
-                    Result.Err (TokenProcessingError e)
+                Err e ->
+                    Err (TokenProcessingError e)
 
         _ ->
-            Result.Err <| TokenProcessingError "Token has invalid shape"
+            Err <| TokenProcessingError "Token has invalid shape"
+
+
+extractAndDecodeToken : Decode.Decoder a -> String -> Result JwtError a
+extractAndDecodeToken dec s =
+    case extractTokenBody s of
+        Err e ->
+            Err e
+
+        Ok body ->
+            case Decode.decodeString dec body of
+                Ok x ->
+                    Ok x
+
+                Err e ->
+                    Err (TokenDecodeError <| Decode.errorToString e)
 
 
 unurl : String -> String

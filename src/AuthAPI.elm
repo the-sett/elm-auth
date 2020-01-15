@@ -18,6 +18,8 @@ will supply an appropriate challenge type and commands to answer challenges.
 
 -}
 
+import Http
+
 
 {-| Username and password credentials.
 -}
@@ -56,4 +58,5 @@ type alias AuthAPI config model msg chal ext =
         , unauthed : Cmd msg
         , refresh : Cmd msg
         , update : msg -> model -> ( model, Cmd msg, Maybe (Status chal) )
+        , addAuthHeaders : model -> List Http.Header -> List Http.Header
     }
