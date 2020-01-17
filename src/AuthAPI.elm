@@ -1,4 +1,4 @@
-module AuthAPI exposing (AuthAPI, Credentials, Status(..))
+module AuthAPI exposing (AuthAPI, AuthInfo, Credentials, Status(..))
 
 {-| AuthAPI defines an extensible API for interacting with authentication.
 It provides the most common authentication commands that applications need, and
@@ -14,7 +14,7 @@ will supply an appropriate challenge type and commands to answer challenges.
 
 # The authentication API.
 
-@docs AuthAPI, Credentials, Status
+@docs AuthAPI, AuthInfo, Credentials, Status
 
 -}
 
@@ -29,11 +29,27 @@ type alias Credentials =
     }
 
 
+{-| Defines properties that must be available once authenticated. This is
+extensible so implementations can add extra information.
+
+`subject` should provide some unique id for the authenticated user. This might
+typically be used as the key to request the users profile.
+
+`scopes` may contain strings that give some application specific indication of
+what access rights the authenticated user has. This might typically be used to
+only render parts of the UI that are going to be able to work correctly when a
+user has certain permissions.
+
+-}
+type alias AuthInfo auth =
+    { auth | scopes : List String, subject : String }
+
+
 {-| The visible status of the authentication model.
 -}
-type Status chal
+type Status auth chal
     = LoggedOut
-    | LoggedIn { scopes : List String, subject : String }
+    | LoggedIn (AuthInfo auth)
     | Failed
     | Challenged chal
 
@@ -50,13 +66,13 @@ to a common pattern. This standardizes how authentcation is handled in
 applications.
 
 -}
-type alias AuthAPI config model msg chal ext =
+type alias AuthAPI config model msg auth chal ext =
     { ext
         | init : config -> Result String model
         , login : Credentials -> Cmd msg
         , logout : Cmd msg
         , unauthed : Cmd msg
         , refresh : Cmd msg
-        , update : msg -> model -> ( model, Cmd msg, Maybe (Status chal) )
+        , update : msg -> model -> ( model, Cmd msg, Maybe (Status auth chal) )
         , addAuthHeaders : model -> List Http.Header -> List Http.Header
     }
