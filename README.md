@@ -41,13 +41,12 @@ type Status auth chal fail
         { auth
             | scopes : List String
             , subject : String
-            , saveState : Value
         }
 ```
 
 That is, each message will update the internal model, and may produce a change to the current authentication status.
 
-The `update` function will only return a new `Status`, when the status changes, it will return `Nothing` if it processes commands but the status remains unchanged. Note that if a refresh happens and new authentication tokens are set, the `LoggedIn` state may be returned when already in this state - since the associated `AuthInfo` will have changed.
+The `update` function will only return a new `Status`, when the status changes, it will return `Nothing` if it processes commands but the status remains unchanged. Note that if a refresh happens and new authentication tokens are set, the `LoggedIn` state may be returned when already in this state - if the associated `AuthInfo` has changed.
 
 # An extensible API with multiple implementations.
 
@@ -63,7 +62,6 @@ The API is presented as an extensible record of functions:
 type alias AuthAPI config model msg auth chal ext fail =
     { ext
         | init : config -> Result String model
-        , restore : Value -> Result String model
         , login : Credentials -> Cmd msg
         , logout : Cmd msg
         , unauthed : Cmd msg
