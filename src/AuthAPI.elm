@@ -19,6 +19,7 @@ will supply an appropriate challenge type and commands to answer challenges.
 -}
 
 import Http
+import Json.Encode exposing (Value)
 
 
 {-| Username and password credentials.
@@ -42,15 +43,18 @@ user has certain permissions.
 
 -}
 type alias AuthInfo auth =
-    { auth | scopes : List String, subject : String }
+    { auth
+        | scopes : List String
+        , subject : String
+    }
 
 
 {-| The visible status of the authentication model.
 -}
-type Status auth chal
+type Status auth chal fail
     = LoggedOut
     | LoggedIn (AuthInfo auth)
-    | Failed
+    | Failed fail
     | Challenged chal
 
 
@@ -66,13 +70,13 @@ to a common pattern. This standardizes how authentcation is handled in
 applications.
 
 -}
-type alias AuthAPI config model msg auth chal ext =
+type alias AuthAPI config model msg auth chal ext fail =
     { ext
         | init : config -> Result String model
         , login : Credentials -> Cmd msg
         , logout : Cmd msg
         , unauthed : Cmd msg
         , refresh : Cmd msg
-        , update : msg -> model -> ( model, Cmd msg, Maybe (Status auth chal) )
+        , update : msg -> model -> ( model, Cmd msg, Maybe (Status auth chal fail) )
         , addAuthHeaders : model -> List Http.Header -> List Http.Header
     }
